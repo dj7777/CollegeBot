@@ -1,0 +1,25 @@
+{
+    "events" :[
+        {
+            "name":"technical",
+            "branch":"cs",
+            "venue":"cl-10"
+        },
+        {
+            "name":"cultural",
+            "branch":"mba",
+            "venue":"spandan"
+        },
+        {
+            "name":"robotics",
+            "branch":"ec",
+            "venue":"cl-09"
+        },
+        {
+            "name":"technical",
+            "branch":"M.Tech",
+            "venue":"cl-09"
+        }
+
+    ]
+}

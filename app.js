@@ -3,6 +3,13 @@ var restify = require('restify');
 var siteUrl = require('./site-url');
 // Setup restify server
 
+var fs = require('fs');
+var obj;
+fs.readFile('data.json', 'utf8', function (err, data) {
+  if (err) throw err;
+  obj = JSON.parse(data);
+});
+
 var server = restify.createServer();   
 server.listen(process.env.port || process.env.PORT || 3978, function(){
     console.log('%s listening to %s', server.name, server.url);
@@ -10,9 +17,42 @@ server.listen(process.env.port || process.env.PORT || 3978, function(){
 
 // create the connector
 
-var connector = new botBuilder.ChatConnector();
+var connector = new botBuilder.ChatConnector({
+    appId : process.env.MICROSOFT_APP_ID,
+ appPassword : process.env.MICROSOFT_APP_PASSWORD
+   
+});
 
 var bot = new botBuilder.UniversalBot(connector, { persistUserData: true });
+
+/*
+var data= 
+{
+    "events" :[
+        {
+            "name":"technical",
+            "branch":"cs",
+            "venue":"cl-10"
+        },
+        {
+            "name":"cultural",
+            "branch":"mba",
+            "venue":"spandan"
+        },
+        {
+            "name":"robotics",
+            "branch":"ec",
+            "venue":"cl-09"
+        },
+        {
+            "name":"technical",
+            "branch":"M.Tech",
+            "venue":"cl-09"
+        }
+
+    ]
+}
+*/
 
  server.post('/api/messages', connector.listen());
 
@@ -87,12 +127,13 @@ bot.on('conversationUpdate', (message) => {
     }
 });
 
-bot.dialog('/events', 
-    function(session, args, next){       
+bot.dialog('/events',function(session, args){       
 
 const EventOptions = {
+    All : 'All',
     Technical: 'Technical',
     Cultural: 'Cultural',
+    Robotics: 'Robotics'
     };
 
   
@@ -105,14 +146,137 @@ const EventOptions = {
                 .alt('Contoso Flowers')
         ])
         .buttons([
-            botBuilder.CardAction.imBack(session, EventOptions.Events, MainOptions.Events),
-            botBuilder.CardAction.imBack(session, EventOptions.Fees, MainOptions.Fees),
-            botBuilder.CardAction.imBack(session, EventOptions.Assignments, MainOptions.Assignments),
-            botBuilder.CardAction.imBack(session, EventOptions.Notice, MainOptions.Notice)
+            botBuilder.CardAction.imBack(session, EventOptions.All, EventOptions.All),
+            botBuilder.CardAction.imBack(session, EventOptions.Technical, EventOptions.Technical),
+            botBuilder.CardAction.imBack(session, EventOptions.Cultural, EventOptions.Cultural),
+            botBuilder.CardAction.imBack(session, EventOptions.Robotics, EventOptions.Robotics)
         ]);
 
     session.send(new botBuilder.Message(session)
         .addAttachment(eventCard));
+
+if(session.message.text == 'All'){
+    session.sendTyping();
+       
+          var all = obj.events.filter(function(element){
+            return element.name.toLowerCase();
+           });
+
+            if (all.length == 0){
+                session.endDialog("Sorry I do not have much info about the events there");
+            }
+            var attchments = [];
+
+            for (var i=0;i<all.length;i++){
+                var attachment = new botBuilder.HeroCard(session)
+                                    .title(all[i]['name'])
+                                    .subtitle(all[i]['branch'])
+                                    .buttons([
+                                        botBuilder.CardAction.imBack(session, all[i]['name'], "Select")
+                                    ]);
+                attchments.push(attachment);
+            }
+
+            var msg = new botBuilder.Message(session)
+                            .attachmentLayout(botBuilder.AttachmentLayout.carousel)
+                            .attachments(attchments);
+            session.endDialog(msg);
+        }
+
+else if(session.message.text == 'Cultural'){
+    session.sendTyping();
+       
+          var cultural = obj.events.filter(function(element){
+            return element.name.toLowerCase() == 'cultural';
+           });
+
+            if (cultural.length == 0){
+                session.endDialog("Sorry I do not have much info about the events there");
+            }
+            var attchments = [];
+
+            for (var i=0;i<cultural.length;i++){
+                var attachment = new botBuilder.HeroCard(session)
+                                    .title(cultural[i]['name'])
+                                    .subtitle(cultural[i]['branch'])
+                                    .buttons([
+                                        botBuilder.CardAction.imBack(session, cultural[i]['name'], "Select")
+                                    ]);
+                attchments.push(attachment);
+            }
+
+            var msg = new botBuilder.Message(session)
+                            .attachmentLayout(botBuilder.AttachmentLayout.carousel)
+                            .attachments(attchments);
+            session.endDialog(msg);
+        }
+
+if(session.message.text == 'Robotics'){
+    session.sendTyping();
+       
+          var robotics = obj.events.filter(function(element){
+            return element.name.toLowerCase() === 'robotics';
+           });
+
+            if (robotics.length == 0){
+                session.endDialog("Sorry I do not have much info about the events there");
+            }
+            var attchments = [];
+
+            for (var i=0;i<robotics.length;i++){
+                var attachment = new botBuilder.HeroCard(session)
+                                    .title(robotics[i]['name'])
+                                    .subtitle(robotics[i]['branch'])
+                                    .buttons([
+                                        botBuilder.CardAction.imBack(session, robotics[i]['name'], "Select")
+                                    ]);
+                attchments.push(attachment);
+            }
+
+            var msg = new botBuilder.Message(session)
+                            .attachmentLayout(botBuilder.AttachmentLayout.carousel)
+                            .attachments(attchments);
+            session.endDialog(msg);
+        }
+
+
+
+if(session.message.text == 'Technical'){
+    session.sendTyping();
+       
+          var technical = obj.events.filter(function(element){
+            return element.name.toLowerCase() === 'technical';
+           });
+
+            if (technical.length == 0){
+                session.endDialog("Sorry I do not have much info about the events there");
+            }
+            var attchments = [];
+
+            for (var i=0;i<technical.length;i++){
+                var attachment = new botBuilder.HeroCard(session)
+                                    .title(technical[i]['name'])
+                                    .subtitle(technical[i]['branch'])
+                                    .buttons([
+                                        botBuilder.CardAction.imBack(session, technical[i]['name'], "Select")
+                                    ]);
+                attchments.push(attachment);
+            }
+
+            var msg = new botBuilder.Message(session)
+                            .attachmentLayout(botBuilder.AttachmentLayout.carousel)
+                            .attachments(attchments);
+            session.endDialog(msg);
+        }
+    
+
+
+
+
+
+
+
+
 
 
            // botBuilder.Prompts.text(session, "What's your name?");

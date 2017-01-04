@@ -1,4 +1,9 @@
 {
+   "entry point": "app.js",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app"
+  },
   "dependencies": {
     "bluebird": "^3.4.7",
     "body-parser": "^1.15.2",
@@ -7,5 +12,9 @@
     "pug": "^2.0.0-beta6",
     "restify": "^4.3.0",
     "uuid": "^3.0.1"
+  },
+  "env":{
+          "MICROSOFT_APP_ID": "58ad7caa-d200-4b98-8f8a-c3559bd0ba17",
+          "MICROSOFT_APP_PASSWORD": "ohrHzadwZC33yyc0FL83z7S"   
   }
 }
