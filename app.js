@@ -1,14 +1,17 @@
 var botBuilder = require('botbuilder');
 var restify = require('restify');
 var siteUrl = require('./site-url');
+var mongoose = require('mongoose');
 // Setup restify server
+
 
 var fs = require('fs');
 var obj;
-fs.readFile('data.json', 'utf8', function (err, data) {
+/*fs.readFile('data.json', 'utf8', function (err, data) {
   if (err) throw err;
   obj = JSON.parse(data);
 });
+*/
 
 // import the language driver
 var MongoClient = require('mongodb').MongoClient
@@ -18,6 +21,7 @@ var MongoClient = require('mongodb').MongoClient
 var url = 'mongodb://127.0.0.1:27017/test';
 
 // Use connect method to connect to the Server
+/*
 MongoClient.connect(url, function(err, db) {
   
   //ensure we've connected
@@ -28,10 +32,88 @@ MongoClient.connect(url, function(err, db) {
 
   var eventData = db.collection('event_data');
 
+ // obj = eventData.find({"name":"technical"}).toArray();
+/*          
+          eventData.find({"name":"technical"}).toArray(function(err, doc){
+                  // Handle any error
+                  if(err){
+                      db.close();
+                      return console.error(err);
+                  }
+                 
+
+                  //  console.log(doc[0].name);
+                 //   return doc;
+          
+        });
+    
+    */
+           
+
+/*
+  // Insert Data
+  eventData.insert({
+            "name":"Other",
+            "branch":"cs",
+            "venue":"cl-01"
+  }, function(err, docs){
+
+      if(err){
+          db.close();
+          return console.error(err);
+      }
+
+      console.log('inserted:');
+      for(var i in docs){
+          console.log(docs.ops[i]);
+      }
+
+ 
+      console.log('inserted' + docs.ops.length + 'document');
+*/
+/*
+      // Update Data
+      var updateEvent = docs.ops[0];
+      updateEvent.venue = "cl 02";
+
+      eventData.update( { _id: new ObjectID(updateEvent._id)},
+         updateEvent, {w:1}, function(err, count){
+              console.log('updated' + count+ 'documents');
+*/
+/*            // Read Data 
+              eventData.findOne({ _id: new ObjectID(updateEvent._id)}, function(err, doc){
+                  // Handle any error
+                  if(err){
+                      db.close();
+                      return console.error(err);
+                  }
+
+                  console.log('read 1 item');
+                  console.log(doc);
+  
+    //close the database connection
+  
+                return db.close();    
+          });
+
+          
+        } );
+      
+      
+
+  });
+ */
+
+ /*   Map Reduce function to retrieve all data from database 
+ 
+     eventData.mapReduce(function(){
+
+    })
+*/
 //close the database connection
   
-                return db.close();
-});
+//                return db.close();
+//});
 
 var server = restify.createServer();   
 server.listen(process.env.port || process.env.PORT || 3978, function(){
@@ -140,6 +222,7 @@ bot.use({
 });
 
 
+
 bot.on('conversationUpdate', (message) => {
     if (message.membersAdded) {
         message.membersAdded.forEach((identity) => {
@@ -180,7 +263,21 @@ const EventOptions = {
 
 if(session.message.text == 'All'){
     session.sendTyping();
-       
+
+  /*      
+     var mong=   eventData.find(function(err, doc){
+                  // Handle any error
+                  if(err){
+                      db.close();
+                      return console.error(err);
+                  }
+
+                  e;
+    //close the database connection
+  
+                return db.close();    
+          }); 
+     */  
           var all = obj.events.filter(function(element){
             return element.name.toLowerCase();
            });
@@ -253,6 +350,7 @@ if(session.message.text == 'Robotics'){
                                     .buttons([
                                         botBuilder.CardAction.imBack(session, robotics[i]['name'], "Select")
                                     ]);
+                                    
                 attchments.push(attachment);
             }
 
@@ -263,49 +361,57 @@ if(session.message.text == 'Robotics'){
         }
 
 
+MongoClient.connect(url, function(err, db) {
+  
+  //ensure we've connected
+  assert.equal(null, err);
+  
+  console.log("Connected correctly to server");
+
+  var eventData = db.collection('event_data');
 
 if(session.message.text == 'Technical'){
     session.sendTyping();
        
-          var technical = obj.events.filter(function(element){
-            return element.name.toLowerCase() === 'technical';
-           });
-
-            if (technical.length == 0){
+    //      var technical = obj;
+                eventData.find({"name":"technical"}).toArray(function(err, doc){
+                  // Handle any error
+                  if(err){
+                      db.close();
+                      return console.error(err);
+                  }
+                 
+            if (doc.length == 0){
                 session.endDialog("Sorry I do not have much info about the events there");
             }
             var attchments = [];
-
-            for (var i=0;i<technical.length;i++){
+        //    console.log(obj[0].name);
+         //   console.log(obj.ops[1].name);
+            for (var i=0;i<doc.length;i++){
                 var attachment = new botBuilder.HeroCard(session)
-                                    .title(technical[i]['name'])
-                                    .subtitle(technical[i]['branch'])
+                                    .title('Event Category: '+doc[i].name)
+                                    .subtitle('Venue: '+doc[i].venue)
+                                    
+                                    .text('Organizer: \n'+doc[i].branch+'Venue: \n'+ doc[i].venue)
+                                    
                                     .buttons([
-                                        botBuilder.CardAction.imBack(session, technical[i]['name'], "Select")
+                                        //botBuilder.CardAction.imBack(session, doc[i].name, "Select")
+                                         botBuilder.CardAction.openUrl(session, 'https://azure.microsoft.com/en-us/services/functions/', 'Learn More')
                                     ]);
                 attchments.push(attachment);
+                
             }
 
             var msg = new botBuilder.Message(session)
                             .attachmentLayout(botBuilder.AttachmentLayout.carousel)
                             .attachments(attchments);
             session.endDialog(msg);
-        }
-    
-
-
-
-
-
-
-
-
-
-
-           // botBuilder.Prompts.text(session, "What's your name?");
-        
-       
+                });
+     }       
     });
+});
+
+
 bot.dialog('/fees', 
     function(session, args, next){       
 
@@ -364,10 +470,7 @@ const EventOptions = {
 
     session.send(new botBuilder.Message(session)
         .addAttachment(eventCard));
-
-
-           // botBuilder.Prompts.text(session, "What's your name?");
-        
+           // botBuilder.Prompts.text(session, "What's your name?");    
        
     });
 

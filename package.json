@@ -1,5 +1,4 @@
 {
-  "name": "college bot",
   "entry point": "app.js",
   "main": "app.js",
   "scripts": {
@@ -12,6 +11,7 @@
     "botbuilder": "^3.4.4",
     "lodash": "^4.17.4",
     "mongodb": "^2.2.21",
+    "mongoose": "^4.7.7",
     "pug": "^2.0.0-beta6",
     "restify": "^4.3.0",
     "uuid": "^3.0.1"
