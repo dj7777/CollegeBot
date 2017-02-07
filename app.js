@@ -2,6 +2,7 @@ var botBuilder = require('botbuilder');
 var restify = require('restify');
 var siteUrl = require('./site-url');
 var mongoose = require('mongoose');
+var schedule = require('node-schedule');
 // Setup restify server
 
 
@@ -19,7 +20,6 @@ var MongoClient = require('mongodb').MongoClient
  var ObjectID = require('mongodb').ObjectID;
   // Connection URL
 var url = 'mongodb://127.0.0.1:27017/test';
-
 
 var server = restify.createServer();   
 server.listen(process.env.port || process.env.PORT || 3978, function(){
@@ -72,6 +72,13 @@ bot.dialog('/', (session) => {
 
     session.send(new botBuilder.Message(session)
         .addAttachment(welcomeCard));
+
+var date = new Date(2017, 01, 1, 17, 56, 0);
+
+var j = schedule.scheduleJob(date, function(){
+    session.beginDialog('/scheduleMessage');
+});
+
 });
 
 
@@ -82,6 +89,7 @@ bot.dialog('/', (session) => {
 
 const feesRegex = /^fees/i;
 const noticeRegex = new RegExp('^(' + MainOptions.Notice + '|notice)', 'i');
+const addNoticeRegex = /^addnotice/;
 bot.use({
     botbuilder: (session, next) => {
         var text = session.message.text;
@@ -91,7 +99,10 @@ bot.use({
         } else if (noticeRegex.test(text)) {
             // interrupt and trigger 'help' dialog
             return session.beginDialog('/notice');
-        }   
+        }
+            else if(addNoticeRegex.test(text)){
+                return session.beginDialog('/addnotice');
+            }   
 
         // continue normal flow
         next();
@@ -342,13 +353,16 @@ bot.dialog('/notice',
 
 const NoticeOptions = {
     All : 'All',
-    Branch: 'Branch Specific'
+    CSE: 'CSE',
+    MBA: 'MBA',
+    MTech:'M.Tech',
+    EC:'EC'
     };
 
   
     var eventCard = new botBuilder.HeroCard(session)
         .title('Welcome to GGITS Notice Board')
-        .subtitle('Select any of the below Notice for Details!!')
+        .subtitle('Select any of the below option for Details!!')
         .images([
             new botBuilder.CardImage(session)
                 .url('https://placeholdit.imgix.net/~text?txtsize=56&txt=Contoso%20Flowers&w=640&h=330')
@@ -356,14 +370,212 @@ const NoticeOptions = {
         ])
         .buttons([
             botBuilder.CardAction.imBack(session, NoticeOptions.All, NoticeOptions.All),
-            botBuilder.CardAction.imBack(session, NoticeOptions.Branch, NoticeOptions.Branch)
+            botBuilder.CardAction.imBack(session, NoticeOptions.CSE, NoticeOptions.CSE),
+            botBuilder.CardAction.imBack(session, NoticeOptions.MBA, NoticeOptions.MBA),
+            botBuilder.CardAction.imBack(session, NoticeOptions.MTech, NoticeOptions.MTech),
+            botBuilder.CardAction.imBack(session, NoticeOptions.EC, NoticeOptions.EC),
         ]);
 
     session.send(new botBuilder.Message(session)
         .addAttachment(eventCard));
            // botBuilder.Prompts.text(session, "What's your name?");    
        
-    });
+
+           MongoClient.connect(url, function(err, db) {
+  
+  //ensure we've connected
+  assert.equal(null, err);
+  
+  console.log("Connected correctly to server");
+
+  var noticeData = db.collection('notice');
+
+
+if(session.message.text == 'All'){
+    session.sendTyping();
+
+  noticeData.find().toArray(function(err, doc){
+                  // Handle any error
+                  if(err){
+                      db.close();
+                      return console.error(err);
+                  }
+            if (doc.length == 0){
+                session.endDialog("Sorry I do not have much info about the events there");
+            }
+            var attchments = [];
+
+            for (var i=0;i<doc.length;i++){
+                var attachment = new botBuilder.HeroCard(session)
+                                   .title('Notice: '+doc[i].text)
+                                    .subtitle('Branch: '+doc[i].branch)                                    
+                                    .text('Sem: \n '+doc[i].sem+',  Notice Issued: \n'+ doc[i].date)                                   
+                                    ;
+                attchments.push(attachment);
+            }
+
+            var msg = new botBuilder.Message(session)
+                            .attachmentLayout(botBuilder.AttachmentLayout.carousel)
+                            .attachments(attchments);
+            session.endDialog(msg);
+        });
+}
+
+else if(session.message.text == 'CSE'){
+    session.sendTyping();
+
+  noticeData.find({"branch":"CSE"}).toArray(function(err, doc){
+                  // Handle any error
+                  if(err){
+                      db.close();
+                      return console.error(err);
+                  }
+            if (doc.length == 0){
+                session.endDialog("Sorry I do not have much info about the events there");
+            }
+            var attchments = [];
+
+            for (var i=0;i<doc.length;i++){
+                var attachment = new botBuilder.HeroCard(session)
+                                   .title('Notice: '+doc[i].text)
+                                    .subtitle('Branch: '+doc[i].branch)                                    
+                                    .text('Sem: \n'+doc[i].sem+', Notice Issued: \n'+ doc[i].date)                                   
+                                    ;
+                attchments.push(attachment);
+            }
+
+            var msg = new botBuilder.Message(session)
+                            .attachmentLayout(botBuilder.AttachmentLayout.carousel)
+                            .attachments(attchments);
+            session.endDialog(msg);
+        });
+}
+
+else if(session.message.text == 'MBA'){
+    session.sendTyping();
+
+  noticeData.find({"branch":"MBA"}).toArray(function(err, doc){
+                  // Handle any error
+                  if(err){
+                      db.close();
+                      return console.error(err);
+                  }
+            if (doc.length == 0){
+                session.endDialog("Sorry I do not have much info about the events there");
+            }
+            var attchments = [];
+
+            for (var i=0;i<doc.length;i++){
+                var attachment = new botBuilder.HeroCard(session)
+                                   .title('Notice: '+doc[i].text)
+                                    .subtitle('Branch: '+doc[i].branch)                                    
+                                    .text('Sem: \n'+doc[i].sem+', Notice Issued: \n'+ doc[i].date)                                   
+                                    ;
+                attchments.push(attachment);
+            }
+
+            var msg = new botBuilder.Message(session)
+                            .attachmentLayout(botBuilder.AttachmentLayout.carousel)
+                            .attachments(attchments);
+            session.endDialog(msg);
+        });
+}
+
+else if(session.message.text == 'M.Tech'){
+    session.sendTyping();
+
+  noticeData.find({"branch":"mtech"}).toArray(function(err, doc){
+                  // Handle any error
+                  if(err){
+                      db.close();
+                      return console.error(err);
+                  }
+            if (doc.length == 0){
+                session.endDialog("Sorry I do not have much info about the events there");
+            }
+            var attchments = [];
+
+            for (var i=0;i<doc.length;i++){
+                var attachment = new botBuilder.HeroCard(session)
+                                   .title('Notice: '+doc[i].text)
+                                    .subtitle('Branch: '+doc[i].branch)                                    
+                                    .text('Sem: \n'+doc[i].sem+', Notice Issued: \n'+ doc[i].date)                                   
+                                    ;
+                attchments.push(attachment);
+            }
+
+            var msg = new botBuilder.Message(session)
+                            .attachmentLayout(botBuilder.AttachmentLayout.carousel)
+                            .attachments(attchments);
+            session.endDialog(msg);
+        });
+}
+
+else if(session.message.text == 'EC'){
+    session.sendTyping();
+
+  noticeData.find({"branch":"ec"}).toArray(function(err, doc){
+                  // Handle any error
+                  if(err){
+                      db.close();
+                      return console.error(err);
+                  }
+            if (doc.length == 0){
+                session.endDialog("Sorry I do not have much info about the events there");
+            }
+            var attchments = [];
+
+            for (var i=0;i<doc.length;i++){
+                var attachment = new botBuilder.HeroCard(session)
+                                   .title('Notice: '+doc[i].text)
+                                    .subtitle('Branch: '+doc[i].branch)                                    
+                                    .text('Sem: \n'+doc[i].sem+', Notice Issued: \n'+ doc[i].date)                                   
+                                    ;
+                attchments.push(attachment);
+            }
+
+            var msg = new botBuilder.Message(session)
+                            .attachmentLayout(botBuilder.AttachmentLayout.carousel)
+                            .attachments(attchments);
+            session.endDialog(msg);
+        });
+}
+           })
+           });
+    
+    
+bot.dialog('/addnotice', [
+    function(session,args,next){
+            if(botBuilder.Prompts.text(session, "Enter Notice in foll. format and seperate each field by ,- \nText, branch,sem,validity,date")){
+            next();
+          }    
+        },
+    
+    function(session,results,next){
+            var str = results.response;
+            var arr = str.split(',');
+            MongoClient.connect(url, function(err, db) {
+        
+                //ensure we've connected
+                assert.equal(null, err);              
+              //  console.log("Connected correctly to server");
+                var noticeData = db.collection('notice');
+                noticeData.insert({
+                        "text":arr[0],
+                        "branch" : arr[1],
+                        "sem": arr[2],
+                        "validity": arr[3],
+                        "date" : "26-01-2016"
+                });
+                next();
+           }
+        )},
+
+    function(session,results){
+            botBuilder.Prompts.text(session, "Notice Added Successfully");
+           // console.log("Data Inserted Successfully");
+    }
+]);
 
 
 var connectorListener = connector.listen();
@@ -429,3 +641,53 @@ bot.dialog('/ensureProfile', [
 ]);
 
 */
+
+/* Scheduling Message  */
+
+/*
+var date = new Date(2017, 01, 1, 17, 22, 0);
+
+var j = schedule.scheduleJob(date, function(){
+    botBuilder.beginDialog('/scheduleMessage');
+});
+*/
+
+bot.dialog('/scheduleMessage',function(session, args){
+    MongoClient.connect(url, function(err, db) {
+  
+  //ensure we've connected
+  assert.equal(null, err);
+  
+  console.log("Connected correctly to server");
+
+  var noticeData = db.collection('notice');
+
+  noticeData.find({"branch":"cse"}).toArray(function(err, doc){
+                  // Handle any error
+                  if(err){
+                      db.close();
+                      return console.error(err);
+                  }
+            if (doc.length == 0){
+                session.endDialog("Sorry I do not have much info about the events there");
+            }
+            var attchments = [];
+
+            for (var i=0;i<doc.length;i++){
+                var attachment = new botBuilder.HeroCard(session)
+                                   .title('Notice: '+doc[i].text)
+                                    .subtitle('Branch: '+doc[i].branch)                                    
+                                    .text('Sem: \n'+doc[i].sem+', Notice Issued: \n'+ doc[i].date)                                   
+                                    ;
+                attchments.push(attachment);
+            }
+
+            var msg = new botBuilder.Message(session)
+                            .attachmentLayout(botBuilder.AttachmentLayout.carousel)
+                            .attachments(attchments);
+            session.endDialog(msg);
+        });
+
+
+});
+})
